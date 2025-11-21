@@ -30,7 +30,7 @@ runs:
             $envVarName = $property.Name
             $envVarValue = $property.Value
             Write-Host "Setting environment variable: $envVarName = $envVarValue" -ForegroundColor Green
-            "$$envVarName=$$envVarValue" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+            "$envVarName=$envVarValue" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
           }
 
           Write-Host ""
