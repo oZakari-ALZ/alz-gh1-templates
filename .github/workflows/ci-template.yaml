@@ -94,6 +94,7 @@ jobs:
           managementGroupId: '${{ env.MANAGEMENT_GROUP_ID }}'
           subscriptionId: '${{ env.SUBSCRIPTION_ID_MANAGEMENT }}'
           resourceGroupName: ''
+          location: '${{ env.LOCATION }}'
           deploymentType: 'managementGroup'
           whatIfEnabled: 'true'
 
@@ -106,6 +107,7 @@ jobs:
           managementGroupId: '${{ env.MANAGEMENT_GROUP_ID }}'
           subscriptionId: '${{ env.SUBSCRIPTION_ID_MANAGEMENT }}'
           resourceGroupName: ''
+          location: '${{ env.LOCATION }}'
           deploymentType: 'managementGroup'
           whatIfEnabled: 'true'
 
@@ -118,6 +120,7 @@ jobs:
           managementGroupId: '${{ env.MANAGEMENT_GROUP_ID }}'
           subscriptionId: '${{ env.SUBSCRIPTION_ID_MANAGEMENT }}'
           resourceGroupName: ''
+          location: '${{ env.LOCATION }}'
           deploymentType: 'managementGroup'
           whatIfEnabled: 'true'
 
@@ -130,6 +133,7 @@ jobs:
           managementGroupId: '${{ env.MANAGEMENT_GROUP_ID }}'
           subscriptionId: '${{ env.SUBSCRIPTION_ID_MANAGEMENT }}'
           resourceGroupName: ''
+          location: '${{ env.LOCATION }}'
           deploymentType: 'managementGroup'
           whatIfEnabled: 'true'
 
@@ -142,6 +146,7 @@ jobs:
           managementGroupId: '${{ env.MANAGEMENT_GROUP_ID }}'
           subscriptionId: '${{ env.SUBSCRIPTION_ID_MANAGEMENT }}'
           resourceGroupName: ''
+          location: '${{ env.LOCATION }}'
           deploymentType: 'managementGroup'
           whatIfEnabled: 'true'
 
@@ -154,6 +159,7 @@ jobs:
           managementGroupId: '${{ env.MANAGEMENT_GROUP_ID }}'
           subscriptionId: '${{ env.SUBSCRIPTION_ID_MANAGEMENT }}'
           resourceGroupName: ''
+          location: '${{ env.LOCATION }}'
           deploymentType: 'managementGroup'
           whatIfEnabled: 'true'
 
@@ -166,6 +172,7 @@ jobs:
           managementGroupId: '${{ env.MANAGEMENT_GROUP_ID }}'
           subscriptionId: '${{ env.SUBSCRIPTION_ID_MANAGEMENT }}'
           resourceGroupName: ''
+          location: '${{ env.LOCATION }}'
           deploymentType: 'managementGroup'
           whatIfEnabled: 'true'
 
@@ -178,6 +185,7 @@ jobs:
           managementGroupId: '${{ env.MANAGEMENT_GROUP_ID }}'
           subscriptionId: '${{ env.SUBSCRIPTION_ID_MANAGEMENT }}'
           resourceGroupName: ''
+          location: '${{ env.LOCATION }}'
           deploymentType: 'managementGroup'
           whatIfEnabled: 'true'
 
@@ -190,6 +198,7 @@ jobs:
           managementGroupId: '${{ env.MANAGEMENT_GROUP_ID }}'
           subscriptionId: '${{ env.SUBSCRIPTION_ID_MANAGEMENT }}'
           resourceGroupName: ''
+          location: '${{ env.LOCATION }}'
           deploymentType: 'managementGroup'
           whatIfEnabled: 'true'
 
@@ -202,6 +211,7 @@ jobs:
           managementGroupId: '${{ env.MANAGEMENT_GROUP_ID }}'
           subscriptionId: '${{ env.SUBSCRIPTION_ID_MANAGEMENT }}'
           resourceGroupName: ''
+          location: '${{ env.LOCATION }}'
           deploymentType: 'managementGroup'
           whatIfEnabled: 'true'
 
@@ -214,6 +224,7 @@ jobs:
           managementGroupId: ''
           subscriptionId: '${{ env.SUBSCRIPTION_ID_MANAGEMENT }}'
           resourceGroupName: ''
+          location: '${{ env.LOCATION }}'
           deploymentType: 'subscription'
           whatIfEnabled: 'true'
 
@@ -226,5 +237,6 @@ jobs:
           managementGroupId: ''
           subscriptionId: '${{ env.SUBSCRIPTION_ID_CONNECTIVITY }}'
           resourceGroupName: ''
+          location: '${{ env.LOCATION }}'
           deploymentType: 'subscription'
           whatIfEnabled: 'true'
