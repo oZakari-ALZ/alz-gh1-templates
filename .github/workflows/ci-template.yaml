@@ -36,8 +36,11 @@ jobs:
             Write-Host "Validating: $($file.FullName)" -ForegroundColor Yellow
             $result = az bicep build --file $file.FullName 2>&1
             if ($LASTEXITCODE -ne 0) {
-              Write-Error "Validation failed for $($file.FullName)"
-              Write-Error $result
+              Write-Host "=== VALIDATION FAILED ===" -ForegroundColor Red
+              Write-Host "File: $($file.FullName)" -ForegroundColor Red
+              Write-Host "Error output:" -ForegroundColor Red
+              Write-Host $result -ForegroundColor Red
+              Write-Host "========================" -ForegroundColor Red
               $errors++
             } else {
               Write-Host "✓ Valid: $($file.FullName)" -ForegroundColor Green
