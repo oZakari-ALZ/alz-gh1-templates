@@ -40,11 +40,12 @@ jobs:
             throw $output
           }
 
-  whatif:
-    name: What If
+  # Tier 1: Intermediate Root
+  whatif-tier1:
+    name: What If Tier 1 - Intermediate Root
     runs-on:
       ubuntu-latest
-    concurrency: gh1-tfstate
+    concurrency: tier1-gh1-tfstate
     environment: alz-gh1-plan
     permissions:
       id-token: write
@@ -85,12 +86,65 @@ jobs:
           deploymentType: 'managementGroup'
           whatIfEnabled: 'true'
 
-      - name: 'What If: Governance-Platform'
+  # Tier 2: Parent Management Groups - run in parallel
+  whatif-tier2:
+    name: What If Tier 2 - ${{ matrix.deployment }}
+    needs: whatif-tier1
+    strategy:
+      max-parallel: 4
+      matrix:
+        include:
+          - deployment: governance-platform
+            displayName: 'Governance-Platform'
+            templateFilePath: 'templates/core/governance/mgmt-groups/platform/main.bicep'
+            templateParametersFilePath: 'templates/core/governance/mgmt-groups/platform/main.bicepparam'
+          - deployment: governance-landingzones
+            displayName: 'Governance-Landing Zones'
+            templateFilePath: 'templates/core/governance/mgmt-groups/landingzones/main.bicep'
+            templateParametersFilePath: 'templates/core/governance/mgmt-groups/landingzones/main.bicepparam'
+          - deployment: governance-sandbox
+            displayName: 'Governance-Sandbox'
+            templateFilePath: 'templates/core/governance/mgmt-groups/sandbox/main.bicep'
+            templateParametersFilePath: 'templates/core/governance/mgmt-groups/sandbox/main.bicepparam'
+          - deployment: governance-decommissioned
+            displayName: 'Governance-Decommissioned'
+            templateFilePath: 'templates/core/governance/mgmt-groups/decommissioned/main.bicep'
+            templateParametersFilePath: 'templates/core/governance/mgmt-groups/decommissioned/main.bicepparam'
+    runs-on:
+      ubuntu-latest
+    environment: alz-gh1-plan
+    permissions:
+      id-token: write
+      contents: read
+    env:
+      PARAMETERS_FILE_NAME: parameters.json
+
+    steps:
+      - name: Checkout Bicep Module
+        uses: actions/checkout@v4
+
+      - name: Get Bicep AVM Variables
+        uses: oZakari-ALZ/alz-gh1-templates/.github/actions/bicep-avm-variables@main
+        with:
+          parameters_file_name: ${{ env.PARAMETERS_FILE_NAME }}
+
+      - name: Install Bicep and Update Az Module
+        uses: oZakari-ALZ/alz-gh1-templates/.github/actions/bicep-avm-installer@main
+
+      - name: OIDC Login to Tenant
+        uses: azure/login@v2
+        with:
+          client-id: ${{ vars.AZURE_CLIENT_ID }}
+          tenant-id: ${{ vars.AZURE_TENANT_ID }}
+          subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+          enable-AzPSSession: true
+
+      - name: 'What If: ${{ matrix.displayName }}'
         uses: oZakari-ALZ/alz-gh1-templates/.github/actions/bicep-avm-deploy@main
         with:
-          displayName: 'Governance-Platform'
-          templateFilePath: 'templates/core/governance/mgmt-groups/platform/main.bicep'
-          templateParametersFilePath: 'templates/core/governance/mgmt-groups/platform/main.bicepparam'
+          displayName: '${{ matrix.displayName }}'
+          templateFilePath: '${{ matrix.templateFilePath }}'
+          templateParametersFilePath: '${{ matrix.templateParametersFilePath }}'
           managementGroupId: '${{ env.MANAGEMENT_GROUP_ID }}'
           subscriptionId: '${{ env.SUBSCRIPTION_ID_MANAGEMENT }}'
           resourceGroupName: ''
@@ -98,12 +152,73 @@ jobs:
           deploymentType: 'managementGroup'
           whatIfEnabled: 'true'
 
-      - name: 'What If: Governance-Platform Connectivity'
+  # Tier 3: Child Management Groups - run in parallel
+  whatif-tier3:
+    name: What If Tier 3 - ${{ matrix.deployment }}
+    needs: whatif-tier2
+    strategy:
+      max-parallel: 6
+      matrix:
+        include:
+          - deployment: governance-platform-connectivity
+            displayName: 'Governance-Platform Connectivity'
+            templateFilePath: 'templates/core/governance/mgmt-groups/platform/platform-connectivity/main.bicep'
+            templateParametersFilePath: 'templates/core/governance/mgmt-groups/platform/platform-connectivity/main.bicepparam'
+          - deployment: governance-platform-identity
+            displayName: 'Governance-Platform Identity'
+            templateFilePath: 'templates/core/governance/mgmt-groups/platform/platform-identity/main.bicep'
+            templateParametersFilePath: 'templates/core/governance/mgmt-groups/platform/platform-identity/main.bicepparam'
+          - deployment: governance-platform-management
+            displayName: 'Governance-Platform Management'
+            templateFilePath: 'templates/core/governance/mgmt-groups/platform/platform-management/main.bicep'
+            templateParametersFilePath: 'templates/core/governance/mgmt-groups/platform/platform-management/main.bicepparam'
+          - deployment: governance-platform-security
+            displayName: 'Governance-Platform Security'
+            templateFilePath: 'templates/core/governance/mgmt-groups/platform/platform-security/main.bicep'
+            templateParametersFilePath: 'templates/core/governance/mgmt-groups/platform/platform-security/main.bicepparam'
+          - deployment: governance-landingzones-corp
+            displayName: 'Governance-Landing Zones Corp'
+            templateFilePath: 'templates/core/governance/mgmt-groups/landingzones/landingzones-corp/main.bicep'
+            templateParametersFilePath: 'templates/core/governance/mgmt-groups/landingzones/landingzones-corp/main.bicepparam'
+          - deployment: governance-landingzones-online
+            displayName: 'Governance-Landing Zones Online'
+            templateFilePath: 'templates/core/governance/mgmt-groups/landingzones/landingzones-online/main.bicep'
+            templateParametersFilePath: 'templates/core/governance/mgmt-groups/landingzones/landingzones-online/main.bicepparam'
+    runs-on:
+      ubuntu-latest
+    environment: alz-gh1-plan
+    permissions:
+      id-token: write
+      contents: read
+    env:
+      PARAMETERS_FILE_NAME: parameters.json
+
+    steps:
+      - name: Checkout Bicep Module
+        uses: actions/checkout@v4
+
+      - name: Get Bicep AVM Variables
+        uses: oZakari-ALZ/alz-gh1-templates/.github/actions/bicep-avm-variables@main
+        with:
+          parameters_file_name: ${{ env.PARAMETERS_FILE_NAME }}
+
+      - name: Install Bicep and Update Az Module
+        uses: oZakari-ALZ/alz-gh1-templates/.github/actions/bicep-avm-installer@main
+
+      - name: OIDC Login to Tenant
+        uses: azure/login@v2
+        with:
+          client-id: ${{ vars.AZURE_CLIENT_ID }}
+          tenant-id: ${{ vars.AZURE_TENANT_ID }}
+          subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+          enable-AzPSSession: true
+
+      - name: 'What If: ${{ matrix.displayName }}'
         uses: oZakari-ALZ/alz-gh1-templates/.github/actions/bicep-avm-deploy@main
         with:
-          displayName: 'Governance-Platform Connectivity'
-          templateFilePath: 'templates/core/governance/mgmt-groups/platform/platform-connectivity/main.bicep'
-          templateParametersFilePath: 'templates/core/governance/mgmt-groups/platform/platform-connectivity/main.bicepparam'
+          displayName: '${{ matrix.displayName }}'
+          templateFilePath: '${{ matrix.templateFilePath }}'
+          templateParametersFilePath: '${{ matrix.templateParametersFilePath }}'
           managementGroupId: '${{ env.MANAGEMENT_GROUP_ID }}'
           subscriptionId: '${{ env.SUBSCRIPTION_ID_MANAGEMENT }}'
           resourceGroupName: ''
@@ -111,132 +226,66 @@ jobs:
           deploymentType: 'managementGroup'
           whatIfEnabled: 'true'
 
-      - name: 'What If: Governance-Platform Identity'
-        uses: oZakari-ALZ/alz-gh1-templates/.github/actions/bicep-avm-deploy@main
-        with:
-          displayName: 'Governance-Platform Identity'
-          templateFilePath: 'templates/core/governance/mgmt-groups/platform/platform-identity/main.bicep'
-          templateParametersFilePath: 'templates/core/governance/mgmt-groups/platform/platform-identity/main.bicepparam'
-          managementGroupId: '${{ env.MANAGEMENT_GROUP_ID }}'
-          subscriptionId: '${{ env.SUBSCRIPTION_ID_MANAGEMENT }}'
-          resourceGroupName: ''
-          location: '${{ env.LOCATION }}'
-          deploymentType: 'managementGroup'
-          whatIfEnabled: 'true'
+  # Tier 4: Core Services - run in parallel
+  whatif-tier4:
+    name: What If Tier 4 - ${{ matrix.deployment }}
+    needs: whatif-tier3
+    strategy:
+      max-parallel: 2
+      matrix:
+        include:
+          - deployment: core-logging
+            displayName: 'Core-Logging'
+            templateFilePath: 'templates/core/logging/main.bicep'
+            templateParametersFilePath: 'templates/core/logging/main.bicepparam'
+            managementGroupId: ''
+            subscriptionId: '${{ env.SUBSCRIPTION_ID_MANAGEMENT }}'
+            deploymentType: 'subscription'
+          - deployment: networking-hubnetworking
+            displayName: 'Networking-Hub Networking'
+            templateFilePath: 'templates/networking/hubnetworking/main.bicep'
+            templateParametersFilePath: 'templates/networking/hubnetworking/main.bicepparam'
+            managementGroupId: ''
+            subscriptionId: '${{ env.SUBSCRIPTION_ID_CONNECTIVITY }}'
+            deploymentType: 'subscription'
+    runs-on:
+      ubuntu-latest
+    environment: alz-gh1-plan
+    permissions:
+      id-token: write
+      contents: read
+    env:
+      PARAMETERS_FILE_NAME: parameters.json
 
-      - name: 'What If: Governance-Platform Management'
-        uses: oZakari-ALZ/alz-gh1-templates/.github/actions/bicep-avm-deploy@main
-        with:
-          displayName: 'Governance-Platform Management'
-          templateFilePath: 'templates/core/governance/mgmt-groups/platform/platform-management/main.bicep'
-          templateParametersFilePath: 'templates/core/governance/mgmt-groups/platform/platform-management/main.bicepparam'
-          managementGroupId: '${{ env.MANAGEMENT_GROUP_ID }}'
-          subscriptionId: '${{ env.SUBSCRIPTION_ID_MANAGEMENT }}'
-          resourceGroupName: ''
-          location: '${{ env.LOCATION }}'
-          deploymentType: 'managementGroup'
-          whatIfEnabled: 'true'
+    steps:
+      - name: Checkout Bicep Module
+        uses: actions/checkout@v4
 
-      - name: 'What If: Governance-Platform Security'
-        uses: oZakari-ALZ/alz-gh1-templates/.github/actions/bicep-avm-deploy@main
+      - name: Get Bicep AVM Variables
+        uses: oZakari-ALZ/alz-gh1-templates/.github/actions/bicep-avm-variables@main
         with:
-          displayName: 'Governance-Platform Security'
-          templateFilePath: 'templates/core/governance/mgmt-groups/platform/platform-security/main.bicep'
-          templateParametersFilePath: 'templates/core/governance/mgmt-groups/platform/platform-security/main.bicepparam'
-          managementGroupId: '${{ env.MANAGEMENT_GROUP_ID }}'
-          subscriptionId: '${{ env.SUBSCRIPTION_ID_MANAGEMENT }}'
-          resourceGroupName: ''
-          location: '${{ env.LOCATION }}'
-          deploymentType: 'managementGroup'
-          whatIfEnabled: 'true'
+          parameters_file_name: ${{ env.PARAMETERS_FILE_NAME }}
 
-      - name: 'What If: Governance-Landing Zones'
-        uses: oZakari-ALZ/alz-gh1-templates/.github/actions/bicep-avm-deploy@main
-        with:
-          displayName: 'Governance-Landing Zones'
-          templateFilePath: 'templates/core/governance/mgmt-groups/landingzones/main.bicep'
-          templateParametersFilePath: 'templates/core/governance/mgmt-groups/landingzones/main.bicepparam'
-          managementGroupId: '${{ env.MANAGEMENT_GROUP_ID }}'
-          subscriptionId: '${{ env.SUBSCRIPTION_ID_MANAGEMENT }}'
-          resourceGroupName: ''
-          location: '${{ env.LOCATION }}'
-          deploymentType: 'managementGroup'
-          whatIfEnabled: 'true'
+      - name: Install Bicep and Update Az Module
+        uses: oZakari-ALZ/alz-gh1-templates/.github/actions/bicep-avm-installer@main
 
-      - name: 'What If: Governance-Landing Zones Corp'
-        uses: oZakari-ALZ/alz-gh1-templates/.github/actions/bicep-avm-deploy@main
+      - name: OIDC Login to Tenant
+        uses: azure/login@v2
         with:
-          displayName: 'Governance-Landing Zones Corp'
-          templateFilePath: 'templates/core/governance/mgmt-groups/landingzones/landingzones-corp/main.bicep'
-          templateParametersFilePath: 'templates/core/governance/mgmt-groups/landingzones/landingzones-corp/main.bicepparam'
-          managementGroupId: '${{ env.MANAGEMENT_GROUP_ID }}'
-          subscriptionId: '${{ env.SUBSCRIPTION_ID_MANAGEMENT }}'
-          resourceGroupName: ''
-          location: '${{ env.LOCATION }}'
-          deploymentType: 'managementGroup'
-          whatIfEnabled: 'true'
+          client-id: ${{ vars.AZURE_CLIENT_ID }}
+          tenant-id: ${{ vars.AZURE_TENANT_ID }}
+          subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+          enable-AzPSSession: true
 
-      - name: 'What If: Governance-Landing Zones Online'
+      - name: 'What If: ${{ matrix.displayName }}'
         uses: oZakari-ALZ/alz-gh1-templates/.github/actions/bicep-avm-deploy@main
         with:
-          displayName: 'Governance-Landing Zones Online'
-          templateFilePath: 'templates/core/governance/mgmt-groups/landingzones/landingzones-online/main.bicep'
-          templateParametersFilePath: 'templates/core/governance/mgmt-groups/landingzones/landingzones-online/main.bicepparam'
-          managementGroupId: '${{ env.MANAGEMENT_GROUP_ID }}'
-          subscriptionId: '${{ env.SUBSCRIPTION_ID_MANAGEMENT }}'
+          displayName: '${{ matrix.displayName }}'
+          templateFilePath: '${{ matrix.templateFilePath }}'
+          templateParametersFilePath: '${{ matrix.templateParametersFilePath }}'
+          managementGroupId: '${{ matrix.managementGroupId }}'
+          subscriptionId: '${{ matrix.subscriptionId }}'
           resourceGroupName: ''
           location: '${{ env.LOCATION }}'
-          deploymentType: 'managementGroup'
-          whatIfEnabled: 'true'
-
-      - name: 'What If: Governance-Sandbox'
-        uses: oZakari-ALZ/alz-gh1-templates/.github/actions/bicep-avm-deploy@main
-        with:
-          displayName: 'Governance-Sandbox'
-          templateFilePath: 'templates/core/governance/mgmt-groups/sandbox/main.bicep'
-          templateParametersFilePath: 'templates/core/governance/mgmt-groups/sandbox/main.bicepparam'
-          managementGroupId: '${{ env.MANAGEMENT_GROUP_ID }}'
-          subscriptionId: '${{ env.SUBSCRIPTION_ID_MANAGEMENT }}'
-          resourceGroupName: ''
-          location: '${{ env.LOCATION }}'
-          deploymentType: 'managementGroup'
-          whatIfEnabled: 'true'
-
-      - name: 'What If: Governance-Decommissioned'
-        uses: oZakari-ALZ/alz-gh1-templates/.github/actions/bicep-avm-deploy@main
-        with:
-          displayName: 'Governance-Decommissioned'
-          templateFilePath: 'templates/core/governance/mgmt-groups/decommissioned/main.bicep'
-          templateParametersFilePath: 'templates/core/governance/mgmt-groups/decommissioned/main.bicepparam'
-          managementGroupId: '${{ env.MANAGEMENT_GROUP_ID }}'
-          subscriptionId: '${{ env.SUBSCRIPTION_ID_MANAGEMENT }}'
-          resourceGroupName: ''
-          location: '${{ env.LOCATION }}'
-          deploymentType: 'managementGroup'
-          whatIfEnabled: 'true'
-
-      - name: 'What If: Core-Logging'
-        uses: oZakari-ALZ/alz-gh1-templates/.github/actions/bicep-avm-deploy@main
-        with:
-          displayName: 'Core-Logging'
-          templateFilePath: 'templates/core/logging/main.bicep'
-          templateParametersFilePath: 'templates/core/logging/main.bicepparam'
-          managementGroupId: ''
-          subscriptionId: '${{ env.SUBSCRIPTION_ID_MANAGEMENT }}'
-          resourceGroupName: ''
-          location: '${{ env.LOCATION }}'
-          deploymentType: 'subscription'
-          whatIfEnabled: 'true'
-
-      - name: 'What If: Networking-Hub Networking'
-        uses: oZakari-ALZ/alz-gh1-templates/.github/actions/bicep-avm-deploy@main
-        with:
-          displayName: 'Networking-Hub Networking'
-          templateFilePath: 'templates/networking/hubnetworking/main.bicep'
-          templateParametersFilePath: 'templates/networking/hubnetworking/main.bicepparam'
-          managementGroupId: ''
-          subscriptionId: '${{ env.SUBSCRIPTION_ID_CONNECTIVITY }}'
-          resourceGroupName: ''
-          location: '${{ env.LOCATION }}'
-          deploymentType: 'subscription'
+          deploymentType: '${{ matrix.deploymentType }}'
           whatIfEnabled: 'true'
