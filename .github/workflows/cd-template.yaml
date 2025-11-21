@@ -75,12 +75,7 @@ jobs:
           parameters_file_name: ${{ env.PARAMETERS_FILE_NAME }}
 
       - name: Install Bicep and Update Az Module
-        uses: azure/CLI@v2
-        with:
-          azcliversion: latest
-          inlineScript: |
-            az bicep install
-            echo "Bicep installed successfully"
+        uses: oZakari-ALZ/alz-gh1-templates/.github/actions/bicep-avm-installer@main
 
       - name: OIDC Login to Tenant
         uses: azure/login@v2
@@ -290,12 +285,7 @@ jobs:
           parameters_file_name: ${{ env.PARAMETERS_FILE_NAME }}
 
       - name: Install Bicep and Update Az Module
-        uses: azure/CLI@v2
-        with:
-          azcliversion: latest
-          inlineScript: |
-            az bicep install
-            echo "Bicep installed successfully"
+        uses: oZakari-ALZ/alz-gh1-templates/.github/actions/bicep-avm-installer@main
 
       - name: OIDC Login to Tenant
         uses: azure/login@v2
