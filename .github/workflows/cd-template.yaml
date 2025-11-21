@@ -460,15 +460,16 @@ jobs:
             templateFilePath: 'templates/core/logging/main.bicep'
             templateParametersFilePath: 'templates/core/logging/main.bicepparam'
             managementGroupId: ''
-            subscriptionId: '${{ env.SUBSCRIPTION_ID_MANAGEMENT }}'
             deploymentType: 'subscription'
+            subscriptionIdEnvVar: 'SUBSCRIPTION_ID_MANAGEMENT'
+            networkType: ''
           - deployment: networking-hubnetworking
             displayName: 'Networking-Hub Networking'
             templateFilePath: 'templates/networking/hubnetworking/main.bicep'
             templateParametersFilePath: 'templates/networking/hubnetworking/main.bicepparam'
             managementGroupId: ''
-            subscriptionId: '${{ env.SUBSCRIPTION_ID_CONNECTIVITY }}'
             deploymentType: 'subscription'
+            subscriptionIdEnvVar: 'SUBSCRIPTION_ID_CONNECTIVITY'
             networkType: 'hubNetworking'
     runs-on:
       ubuntu-latest
@@ -507,7 +508,7 @@ jobs:
           templateFilePath: '${{ matrix.templateFilePath }}'
           templateParametersFilePath: '${{ matrix.templateParametersFilePath }}'
           managementGroupId: '${{ matrix.managementGroupId }}'
-          subscriptionId: '${{ matrix.subscriptionId }}'
+          subscriptionId: '${{ env[matrix.subscriptionIdEnvVar] }}'
           resourceGroupName: ''
           location: '${{ env.LOCATION }}'
           deploymentType: '${{ matrix.deploymentType }}'
